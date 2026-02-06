@@ -1,0 +1,197 @@
+{
+  "_schema": "nemo-manufacturing-config-v3.1",
+  "_platform": "windows",
+  "_converted_from": "macos",
+  "manufacturing": {
+    "facility": {
+      "id": "FAC-001",
+      "name": "Production Line Alpha",
+      "location": "Main Campus",
+      "timezone": "America/Chicago",
+      "shifts": [
+        {
+          "id": "SHIFT-1",
+          "name": "Day Shift",
+          "start": "06:00",
+          "end": "14:00",
+          "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        },
+        {
+          "id": "SHIFT-2", 
+          "name": "Evening Shift",
+          "start": "14:00",
+          "end": "22:00",
+          "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        },
+        {
+          "id": "SHIFT-3",
+          "name": "Night Shift",
+          "start": "22:00",
+          "end": "06:00",
+          "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+        }
+      ]
+    },
+    "production_lines": [
+      {
+        "id": "LINE-001",
+        "name": "Assembly Line A",
+        "type": "automated",
+        "status": "active",
+        "capacity": {
+          "units_per_hour": 120,
+          "max_workers": 8,
+          "current_workers": 6
+        },
+        "equipment": [
+          {
+            "id": "ROBOT-001",
+            "type": "industrial_robot",
+            "model": "IRB-2600",
+            "ip_address": "192.168.1.101",
+            "status": "operational",
+            "last_maintenance": "2026-01-15T08:00:00Z",
+            "next_maintenance": "2026-02-15T08:00:00Z"
+          },
+          {
+            "id": "CONVEYOR-001",
+            "type": "conveyor_belt",
+            "model": "CB-5000",
+            "speed_mpm": 15,
+            "status": "operational",
+            "sensor_data": {
+              "temperature": 45,
+              "vibration": 2.1,
+              "load_percentage": 78
+            }
+          },
+          {
+            "id": "VISION-001",
+            "type": "quality_scanner",
+            "model": "VS-Pro-X",
+            "resolution": "4K",
+            "frame_rate": 60,
+            "defect_detection_rate": 99.7
+          }
+        ],
+        "quality_control": {
+          "inspection_points": 5,
+          "sample_rate": "1:100",
+          "acceptable_defect_rate": 0.05,
+          "current_defect_rate": 0.02
+        }
+      },
+      {
+        "id": "LINE-002",
+        "name": "Assembly Line B",
+        "type": "semi_automated",
+        "status": "maintenance",
+        "capacity": {
+          "units_per_hour": 80,
+          "max_workers": 12,
+          "current_workers": 0
+        },
+        "maintenance_schedule": {
+          "type": "planned",
+          "start": "2026-02-06T06:00:00Z",
+          "estimated_completion": "2026-02-07T06:00:00Z",
+          "technician": "John Smith"
+        }
+      }
+    ],
+    "inventory": {
+      "warehouses": [
+        {
+          "id": "WH-001",
+          "name": "Raw Materials Warehouse",
+          "location": "Building A",
+          "capacity": 10000,
+          "current_utilization": 0.75,
+          "temperature_controlled": true,
+          "target_temp_celsius": 22,
+          "current_temp_celsius": 21.5
+        },
+        {
+          "id": "WH-002",
+          "name": "Finished Goods Warehouse",
+          "location": "Building B",
+          "capacity": 5000,
+          "current_utilization": 0.45,
+          "automated": true,
+          "robot_count": 3
+        }
+      ],
+      "reorder_points": {
+        "critical": 100,
+        "low": 500,
+        "normal": 1000
+      }
+    },
+    "workforce": {
+      "total_employees": 145,
+      "certifications_required": [
+        "OSHA-10",
+        "Forklift Operator",
+        "Quality Control Basics"
+      ],
+      "training_modules": [
+        {
+          "id": "TRAIN-001",
+          "name": "Safety Protocol 2026",
+          "completion_rate": 0.95,
+          "due_date": "2026-03-01T00:00:00Z"
+        },
+        {
+          "id": "TRAIN-002",
+          "name": "New Equipment Operation",
+          "completion_rate": 0.72,
+          "due_date": "2026-02-15T00:00:00Z"
+        }
+      ]
+    },
+    "kpis": {
+      "oee": {
+        "target": 0.85,
+        "current": 0.82,
+        "availability": 0.95,
+        "performance": 0.88,
+        "quality": 0.98
+      },
+      "throughput": {
+        "target_units_per_day": 2400,
+        "actual_units_per_day": 2160,
+        "efficiency": 0.90
+      },
+      "safety": {
+        "days_without_incident": 127,
+        "incident_rate": 0.5,
+        "near_misses_this_month": 2
+      }
+    },
+    "windows_integration": {
+      "domain": "MANUFACTURING.CORP",
+      "active_directory_enabled": true,
+      "sccm_deployed": true,
+      "wsus_configured": true,
+      "iot_core_devices": [
+        {
+          "device_id": "IOT-001",
+          "name": "Line Controller A",
+          "os": "Windows IoT Core 10",
+          "ip": "192.168.1.200",
+          "last_update": "2026-02-01T00:00:00Z"
+        }
+      ],
+      "power_shell_scripts": [
+        "config/restart-services.ps1",
+        "config/backup-configs.ps1",
+        "config/health-check.ps1"
+      ]
+    }
+  },
+  "reindex_metadata": {
+    "last_reindex": null,
+    "reindex_count": 0,
+    "version_history": []
+  }
+}

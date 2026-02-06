@@ -1,0 +1,18 @@
+{
+  "GHOST_API_KEY": "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",
+  "ARCHITECT_API_KEY": "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",
+  "MONK_API_KEY": "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",
+  "SHADOW_API_KEY": "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",
+  "OBSERVER_API_KEY": "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",
+  "_provider": "OpenRouter",
+  "_model": "moonshotai/kimi-k2.5",
+  "_credits": "$10 added Feb 5 2026",
+  "_status": "ACTIVE",
+  "_roles": {
+    "GHOST": "THE GHOST - O(1) Predictor (pre-cached answers)",
+    "ARCHITECT": "THE ARCHITECT - The Toolbox (design patterns)",
+    "MONK": "THE MONK - Deep Reasoning (loop-protected thinking)",
+    "SHADOW": "THE SHADOW - Chi Aesthetic (UI/UX consciousness)",
+    "OBSERVER": "THE OBSERVER - Browser Sync (real-time monitoring)"
+  }
+}

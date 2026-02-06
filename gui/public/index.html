@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEMO Conductor v3.1 - Full Spectrum Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .chi-glow {
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
+            padding: 20px;
+            border-bottom: 2px solid #00ffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            chi-glow: true;
+        }
+        .council-status {
+            display: flex;
+            gap: 15px;
+        }
+        .key-status {
+            padding: 10px 15px;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            background: rgba(0, 255, 255, 0.1);
+            font-size: 0.8em;
+        }
+        .key-status.active {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+        .key-status.inactive {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 80px);
+        }
+        .sidebar {
+            background: #1a1a2e;
+            border-right: 1px solid #00ffff;
+            padding: 20px;
+        }
+        .nav-item {
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+        .content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .panel {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .panel.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .card h3 {
+            margin-bottom: 15px;
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        .btn {
+            background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+            color: #0a0a0f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffff;
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff0000 0%, #ff6600 100%);
+            color: white;
+        }
+        .spectrum-container {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        #spectrumCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        .frequency-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+        .analysis-results {
+            max-height: 500px;
+            overflow-y: auto;
+            background: #0f0f1a;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            transition: width 0.3s;
+        }
+        .log-container {
+            background: #000;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .log-entry.info { color: #00ffff; }
+        .log-entry.success { color: #00ff00; }
+        .log-entry.error { color: #ff0000; }
+        .log-entry.warning { color: #ffff00; }
+        .config-editor {
+            width: 100%;
+            min-height: 400px;
+            background: #0f0f1a;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            color: #00ffff;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff00ff;
+        }
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="chi-glow">?? NEMO Conductor v3.1</h1>
+        <div class="council-status">
+            <div class="key-status" id="ghost-status">GHOST</div>
+            <div class="key-status" id="architect-status">ARCHITECT</div>
+            <div class="key-status" id="monk-status">MONK</div>
+            <div class="key-status" id="shadow-status">SHADOW</div>
+            <div class="key-status" id="observer-status">OBSERVER</div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="nav-item active" onclick="showPanel('dashboard')">?? Dashboard</div>
+            <div class="nav-item" onclick="showPanel('spectrum')">?? RF Spectrum</div>
+            <div class="nav-item" onclick="showPanel('analysis')">?? Codebase Analysis</div>
+            <div class="nav-item" onclick="showPanel('config')">?? Config Recovery</div>
+            <div class="nav-item" onclick="showPanel('council')">??? Council Control</div>
+            <div class="nav-item" onclick="showPanel('reports')">?? Reports</div>
+            <div class="nav-item" onclick="showPanel('logs')">?? System Logs</div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Panel -->
+            <div class="panel active" id="dashboard">
+                <h2 class="chi-glow">Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="tier-display">EFFICIENT</div>
+                        <div class="stat-label">Memory Tier</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="keys-active">5/5</div>
+                        <div class="stat-label">Council Keys</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="projects-analyzed">0</div>
+                        <div class="stat-label">Projects Analyzed</div>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>Quick Actions</h3>
+                        <button class="btn" onclick="runLoopDetection()">?? Detect Loops</button>
+                        <button class="btn" onclick="runAnalysis()">?? Analyze Codebase</button>
+                        <button class="btn" onclick="recoverConfig()">?? Recover Config</button>
+                        <button class="btn" onclick="startSpectrum()">?? Start RF Scan</button>
+                    </div>
+                    <div class="card">
+                        <h3>System Status</h3>
+                        <div id="system-status">
+                            <p>Mode: <span id="mode-display">HYBRID_SYNC</span></p>
+                            <p>RAM: <span id="ram-display">Detecting...</span></p>
+                            <p>Cache: <span id="cache-display">minimal</span></p>
+                            <p>Workers: <span id="workers-display">2</span></p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Active Tasks</h3>
+                        <div id="active-tasks">
+                            <p>No active tasks</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spectrum Panel -->
+            <div class="panel" id="spectrum">
+                <h2 class="chi-glow">RF Spectrum Analyzer</h2>
+                <div class="spectrum-container">
+                    <canvas id="spectrumCanvas"></canvas>
+                    <div class="frequency-display">
+                        <div>Center: <span id="center-freq">2.4 GHz</span></div>
+                        <div>Span: <span id="freq-span">100 MHz</span></div>
+                        <div>Peak: <span id="peak-freq">--</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="startScan()">?? Start Scan</button>
+                    <button class="btn" onclick="stopScan()">?? Stop</button>
+                    <button class="btn" onclick="setFrequency(2.4)">2.4 GHz (WiFi)</button>
+                    <button class="btn" onclick="setFrequency(5.8)">5.8 GHz</button>
+                    <button class="btn" onclick="setFrequency(0.9)">900 MHz</button>
+                </div>
+            </div>
+
+            <!-- Analysis Panel -->
+            <div class="panel" id="analysis">
+                <h2 class="chi-glow">Multi-Codebase Analysis</h2>
+                <div class="card">
+                    <h3>Select Projects</h3>
+                    <input type="file" id="project-select" webkitdirectory directory multiple style="display: none;" onchange="loadProjects(event)">
+                    <button class="btn" onclick="document.getElementById('project-select').click()">?? Select Projects</button>
+                    <button class="btn" onclick="analyzeAll()">?? Analyze All</button>
+                    <div id="project-list"></div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Analysis Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="analysis-progress" style="width: 0%"></div>
+                    </div>
+                    <div id="analysis-status">Ready</div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Results</h3>
+                    <div class="analysis-results" id="analysis-results">No analysis results yet...</div>
+                </div>
+            </div>
+
+            <!-- Config Recovery Panel -->
+            <div class="panel" id="config">
+                <h2 class="chi-glow">Config Recovery & Re-index</h2>
+                <div class="card">
+                    <h3>Deleted Config Recovery</h3>
+                    <p>Scan for and recover deleted configuration files</p>
+                    <button class="btn" onclick="scanDeletedConfigs()">?? Scan Deleted</button>
+                    <button class="btn" onclick="reindexConfigs()">?? Re-index All</button>
+                    <button class="btn danger" onclick="cleanBrokenConfigs()">?? Clean Broken</button>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Config Editor</h3>
+                    <textarea class="config-editor" id="config-editor" placeholder="Select a config file to edit..."></textarea>
+                    <div style="margin-top: 10px;">
+                        <button class="btn" onclick="loadConfig()">?? Load</button>
+                        <button class="btn" onclick="saveConfig()">?? Save</button>
+                        <button class="btn" onclick="validateConfig()">? Validate</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Council Panel -->
+            <div class="panel" id="council">
+                <h2 class="chi-glow">5-Key Council Control</h2>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>THE GHOST</h3>
+                        <p>Predictive Intent Engine</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>
+                        <button class="btn" onclick="activateKey('GHOST')">Activate</button>
+                        <button class="btn" onclick="testKey('GHOST')">Test</button>
+                    </div>
+                    <div class="card">
+                        <h3>THE ARCHITECT</h3>
+                        <p>System Design & Toolbox</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 90%"></div></div>
+                        <button class="btn" onclick="activateKey('ARCHITECT')">Activate</button>
+                        <button class="btn" onclick="testKey('ARCHITECT')">Test</button>
+                    </div>
+                    <div class="card">
+                        <h3>THE MONK</h3>
+                        <p>Deep Reasoning & Loop Protection</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 95%"></div></div>
+                        <button class="btn" onclick="activateKey('MONK')">Activate</button>
+                        <button class="btn" onclick="testKey('MONK')">Test</button>
+                    </div>
+                    <div class="card">
+                        <h3>THE SHADOW</h3>
+                        <p>UI Styling (Chi Aesthetic)</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 80%"></div></div>
+                        <button class="btn" onclick="activateKey('SHADOW')">Activate</button>
+                        <button class="btn" onclick="testKey('SHADOW')">Test</button>
+                    </div>
+                    <div class="card">
+                        <h3>THE OBSERVER</h3>
+                        <p>Browser Sync & Monitoring</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 88%"></div></div>
+                        <button class="btn" onclick="activateKey('OBSERVER')">Activate</button>
+                        <button class="btn" onclick="testKey('OBSERVER')">Test</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Panel -->
+            <div class="panel" id="reports">
+                <h2 class="chi-glow">Analysis Reports</h2>
+                <div class="card">
+                    <h3>Generated Reports</h3>
+                    <div id="reports-list">
+                        <p>No reports generated yet</p>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Export Options</h3>
+                    <button class="btn" onclick="exportReport('json')">?? Export JSON</button>
+                    <button class="btn" onclick="exportReport('md')">?? Export Markdown</button>
+                    <button class="btn" onclick="exportReport('pdf')">?? Export PDF</button>
+                    <button class="btn" onclick="emailReport()">?? Email Report</button>
+                </div>
+            </div>
+
+            <!-- Logs Panel -->
+            <div class="panel" id="logs">
+                <h2 class="chi-glow">System Logs</h2>
+                <div class="log-container" id="log-container"></div>
+                <div style="margin-top: 10px;">
+                    <button class="btn" onclick="clearLogs()">??? Clear</button>
+                    <button class="btn" onclick="exportLogs()">?? Export</button>
+                    <button class="btn" onclick="refreshLogs()">?? Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="nemo-gui.js"></script>
+</body>
+</html>
