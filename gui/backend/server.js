@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NEMO Conductor Backend Server v3.1
  * Express + Supabase Integration + Council Query
  * Serves GUI and provides API endpoints
@@ -233,7 +233,7 @@ app.post('/api/council/query', async (req, res) => {
         if (!response.ok) {
             const errorText = await response.text();
             console.error(`API Error for ${key}:`, errorText);
-            return res.status(500).json({ error: `API error: ${response.status}` });
+            console.log(`API failed, fallback to demo`); return res.json({ response: getDemoResponse(key, query, complexity), tokens: 100, confidence: 0.75, demo: true, fallback: true });
         }
 
         const data = await response.json();
@@ -620,3 +620,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
