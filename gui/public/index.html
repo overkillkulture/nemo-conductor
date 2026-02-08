@@ -26,7 +26,6 @@
         }
         .header h1 {
             font-size: 2em;
-            chi-glow: true;
         }
         .council-status {
             display: flex;
@@ -48,6 +47,16 @@
             background: rgba(255, 0, 0, 0.2);
             border-color: #ff0000;
             color: #ff0000;
+        }
+        .key-status.thinking {
+            background: rgba(255, 255, 0, 0.2);
+            border-color: #ffff00;
+            color: #ffff00;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         .main-container {
             display: grid;
@@ -120,6 +129,14 @@
         .btn.danger {
             background: linear-gradient(135deg, #ff0000 0%, #ff6600 100%);
             color: white;
+        }
+        .btn.secondary {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            color: #00ffff;
+        }
+        .btn.active {
+            box-shadow: 0 0 15px #00ffff;
+            transform: scale(1.05);
         }
         .spectrum-container {
             width: 100%;
@@ -218,11 +235,198 @@
             color: #888;
             margin-top: 5px;
         }
+
+        /* ============ NEW: Council Query System ============ */
+        .query-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .query-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .query-input {
+            flex: 1;
+            background: #0a0a0f;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+        }
+        .query-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        .complexity-toggle {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .complexity-label {
+            color: #888;
+            margin-right: 10px;
+        }
+        .complexity-btn {
+            padding: 8px 15px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .complexity-btn.active {
+            background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+            color: #0a0a0f;
+            border-color: #00ffff;
+            font-weight: bold;
+        }
+        .complexity-btn:hover {
+            border-color: #00ffff;
+        }
+
+        /* Thought Cards */
+        .thoughts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .thought-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        .thought-card.active {
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .thought-card.thinking {
+            border-color: #ffff00;
+            animation: cardPulse 1s infinite;
+        }
+        @keyframes cardPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 0, 0.5); }
+        }
+        .thought-card.error {
+            border-color: #ff0000;
+        }
+        .thought-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        .thought-title {
+            font-weight: bold;
+            color: #ff00ff;
+        }
+        .thought-status {
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+        .thought-status.ready { background: #1a1a2e; color: #888; }
+        .thought-status.thinking { background: #333300; color: #ffff00; }
+        .thought-status.done { background: #003300; color: #00ff00; }
+        .thought-status.error { background: #330000; color: #ff0000; }
+
+        .thought-content {
+            color: #ccc;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .thought-content.collapsed {
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+        .thought-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(transparent, #0f0f1a);
+        }
+
+        /* Expert Mode Extras */
+        .thought-meta {
+            display: none;
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+        .thought-meta.visible {
+            display: block;
+        }
+        .thought-meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+        .thought-meta-label { color: #888; }
+        .thought-meta-value { color: #00ffff; }
+
+        /* Expand/Collapse */
+        .expand-btn {
+            background: none;
+            border: 1px solid #555;
+            color: #888;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+        .expand-btn:hover {
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        /* Council Control Cards (original style updated) */
+        .council-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .council-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .council-card h4 {
+            color: #ff00ff;
+            margin-bottom: 5px;
+        }
+        .council-card p {
+            font-size: 0.75em;
+            color: #888;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 class="chi-glow">?? NEMO Conductor v3.1</h1>
+        <h1 class="chi-glow">🔮 NEMO Conductor v3.1</h1>
         <div class="council-status">
             <div class="key-status" id="ghost-status">GHOST</div>
             <div class="key-status" id="architect-status">ARCHITECT</div>
@@ -234,13 +438,13 @@
 
     <div class="main-container">
         <div class="sidebar">
-            <div class="nav-item active" onclick="showPanel('dashboard')">?? Dashboard</div>
-            <div class="nav-item" onclick="showPanel('spectrum')">?? RF Spectrum</div>
-            <div class="nav-item" onclick="showPanel('analysis')">?? Codebase Analysis</div>
-            <div class="nav-item" onclick="showPanel('config')">?? Config Recovery</div>
-            <div class="nav-item" onclick="showPanel('council')">??? Council Control</div>
-            <div class="nav-item" onclick="showPanel('reports')">?? Reports</div>
-            <div class="nav-item" onclick="showPanel('logs')">?? System Logs</div>
+            <div class="nav-item active" onclick="showPanel('dashboard')">📊 Dashboard</div>
+            <div class="nav-item" onclick="showPanel('spectrum')">📡 RF Spectrum</div>
+            <div class="nav-item" onclick="showPanel('analysis')">🔍 Codebase Analysis</div>
+            <div class="nav-item" onclick="showPanel('config')">⚙️ Config Recovery</div>
+            <div class="nav-item" onclick="showPanel('council')">🧠 Council Control</div>
+            <div class="nav-item" onclick="showPanel('reports')">📈 Reports</div>
+            <div class="nav-item" onclick="showPanel('logs')">📝 System Logs</div>
         </div>
 
         <div class="content">
@@ -264,10 +468,10 @@
                 <div class="dashboard-grid">
                     <div class="card">
                         <h3>Quick Actions</h3>
-                        <button class="btn" onclick="runLoopDetection()">?? Detect Loops</button>
-                        <button class="btn" onclick="runAnalysis()">?? Analyze Codebase</button>
-                        <button class="btn" onclick="recoverConfig()">?? Recover Config</button>
-                        <button class="btn" onclick="startSpectrum()">?? Start RF Scan</button>
+                        <button class="btn" onclick="runLoopDetection()">🔄 Detect Loops</button>
+                        <button class="btn" onclick="runAnalysis()">🔬 Analyze Codebase</button>
+                        <button class="btn" onclick="recoverConfig()">🔧 Recover Config</button>
+                        <button class="btn" onclick="startSpectrum()">📡 Start RF Scan</button>
                     </div>
                     <div class="card">
                         <h3>System Status</h3>
@@ -299,8 +503,8 @@
                     </div>
                 </div>
                 <div style="margin-top: 20px;">
-                    <button class="btn" onclick="startScan()">?? Start Scan</button>
-                    <button class="btn" onclick="stopScan()">?? Stop</button>
+                    <button class="btn" onclick="startScan()">▶️ Start Scan</button>
+                    <button class="btn" onclick="stopScan()">⏹️ Stop</button>
                     <button class="btn" onclick="setFrequency(2.4)">2.4 GHz (WiFi)</button>
                     <button class="btn" onclick="setFrequency(5.8)">5.8 GHz</button>
                     <button class="btn" onclick="setFrequency(0.9)">900 MHz</button>
@@ -313,8 +517,8 @@
                 <div class="card">
                     <h3>Select Projects</h3>
                     <input type="file" id="project-select" webkitdirectory directory multiple style="display: none;" onchange="loadProjects(event)">
-                    <button class="btn" onclick="document.getElementById('project-select').click()">?? Select Projects</button>
-                    <button class="btn" onclick="analyzeAll()">?? Analyze All</button>
+                    <button class="btn" onclick="document.getElementById('project-select').click()">📁 Select Projects</button>
+                    <button class="btn" onclick="analyzeAll()">🔬 Analyze All</button>
                     <div id="project-list"></div>
                 </div>
                 <div class="card" style="margin-top: 20px;">
@@ -336,59 +540,210 @@
                 <div class="card">
                     <h3>Deleted Config Recovery</h3>
                     <p>Scan for and recover deleted configuration files</p>
-                    <button class="btn" onclick="scanDeletedConfigs()">?? Scan Deleted</button>
-                    <button class="btn" onclick="reindexConfigs()">?? Re-index All</button>
-                    <button class="btn danger" onclick="cleanBrokenConfigs()">?? Clean Broken</button>
+                    <button class="btn" onclick="scanDeletedConfigs()">🔍 Scan Deleted</button>
+                    <button class="btn" onclick="reindexConfigs()">📋 Re-index All</button>
+                    <button class="btn danger" onclick="cleanBrokenConfigs()">🗑️ Clean Broken</button>
                 </div>
                 <div class="card" style="margin-top: 20px;">
                     <h3>Config Editor</h3>
                     <textarea class="config-editor" id="config-editor" placeholder="Select a config file to edit..."></textarea>
                     <div style="margin-top: 10px;">
-                        <button class="btn" onclick="loadConfig()">?? Load</button>
-                        <button class="btn" onclick="saveConfig()">?? Save</button>
-                        <button class="btn" onclick="validateConfig()">? Validate</button>
+                        <button class="btn" onclick="loadConfig()">📂 Load</button>
+                        <button class="btn" onclick="saveConfig()">💾 Save</button>
+                        <button class="btn" onclick="validateConfig()">✓ Validate</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Council Panel -->
+            <!-- ============ UPDATED: Council Panel with Thoughts ============ -->
             <div class="panel" id="council">
-                <h2 class="chi-glow">5-Key Council Control</h2>
-                <div class="dashboard-grid">
-                    <div class="card">
-                        <h3>THE GHOST</h3>
-                        <p>Predictive Intent Engine</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>
-                        <button class="btn" onclick="activateKey('GHOST')">Activate</button>
-                        <button class="btn" onclick="testKey('GHOST')">Test</button>
+                <h2 class="chi-glow">🧠 5-Key Council Control</h2>
+
+                <!-- Query Section -->
+                <div class="query-section">
+                    <h3 style="color: #ff00ff; margin-bottom: 15px;">Ask the Council</h3>
+
+                    <!-- Complexity Toggle (The Fender) -->
+                    <div class="complexity-toggle">
+                        <span class="complexity-label">Complexity:</span>
+                        <button class="complexity-btn active" onclick="setComplexity('simple')" id="complexity-simple">🚗 Simple</button>
+                        <button class="complexity-btn" onclick="setComplexity('standard')" id="complexity-standard">🏎️ Standard</button>
+                        <button class="complexity-btn" onclick="setComplexity('expert')" id="complexity-expert">🛠️ Expert</button>
                     </div>
-                    <div class="card">
-                        <h3>THE ARCHITECT</h3>
-                        <p>System Design & Toolbox</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width: 90%"></div></div>
-                        <button class="btn" onclick="activateKey('ARCHITECT')">Activate</button>
-                        <button class="btn" onclick="testKey('ARCHITECT')">Test</button>
+
+                    <!-- Query Input -->
+                    <div class="query-input-container">
+                        <input type="text" class="query-input" id="council-query"
+                            placeholder="Ask all council members a question..."
+                            onkeypress="if(event.key==='Enter') queryCouncil()">
+                        <button class="btn" onclick="queryCouncil()">🔮 Ask Council</button>
                     </div>
-                    <div class="card">
-                        <h3>THE MONK</h3>
-                        <p>Deep Reasoning & Loop Protection</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width: 95%"></div></div>
-                        <button class="btn" onclick="activateKey('MONK')">Activate</button>
-                        <button class="btn" onclick="testKey('MONK')">Test</button>
+
+                    <!-- Individual Member Selectors -->
+                    <div style="margin-top: 10px;">
+                        <span style="color: #888; margin-right: 10px;">Or ask specific:</span>
+                        <button class="btn secondary" onclick="queryMember('GHOST')">👻 GHOST</button>
+                        <button class="btn secondary" onclick="queryMember('ARCHITECT')">🏗️ ARCHITECT</button>
+                        <button class="btn secondary" onclick="queryMember('MONK')">🧘 MONK</button>
+                        <button class="btn secondary" onclick="queryMember('SHADOW')">🎨 SHADOW</button>
+                        <button class="btn secondary" onclick="queryMember('OBSERVER')">👁️ OBSERVER</button>
                     </div>
-                    <div class="card">
-                        <h3>THE SHADOW</h3>
-                        <p>UI Styling (Chi Aesthetic)</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width: 80%"></div></div>
-                        <button class="btn" onclick="activateKey('SHADOW')">Activate</button>
-                        <button class="btn" onclick="testKey('SHADOW')">Test</button>
+                </div>
+
+                <!-- Thought Cards (Where we show individual responses) -->
+                <div class="thoughts-container" id="thoughts-container">
+                    <!-- GHOST Card -->
+                    <div class="thought-card" id="thought-ghost">
+                        <div class="thought-header">
+                            <span class="thought-title">👻 THE GHOST</span>
+                            <span class="thought-status ready" id="status-ghost">Ready</span>
+                        </div>
+                        <div class="thought-content" id="content-ghost">
+                            <em style="color: #666;">Predictive Intent Engine - Anticipates what you need</em>
+                        </div>
+                        <div class="thought-meta" id="meta-ghost">
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Tokens:</span>
+                                <span class="thought-meta-value" id="tokens-ghost">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Latency:</span>
+                                <span class="thought-meta-value" id="latency-ghost">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Confidence:</span>
+                                <span class="thought-meta-value" id="confidence-ghost">-</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3>THE OBSERVER</h3>
-                        <p>Browser Sync & Monitoring</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width: 88%"></div></div>
-                        <button class="btn" onclick="activateKey('OBSERVER')">Activate</button>
-                        <button class="btn" onclick="testKey('OBSERVER')">Test</button>
+
+                    <!-- ARCHITECT Card -->
+                    <div class="thought-card" id="thought-architect">
+                        <div class="thought-header">
+                            <span class="thought-title">🏗️ THE ARCHITECT</span>
+                            <span class="thought-status ready" id="status-architect">Ready</span>
+                        </div>
+                        <div class="thought-content" id="content-architect">
+                            <em style="color: #666;">System Design & Toolbox - Builds solutions</em>
+                        </div>
+                        <div class="thought-meta" id="meta-architect">
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Tokens:</span>
+                                <span class="thought-meta-value" id="tokens-architect">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Latency:</span>
+                                <span class="thought-meta-value" id="latency-architect">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Confidence:</span>
+                                <span class="thought-meta-value" id="confidence-architect">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MONK Card -->
+                    <div class="thought-card" id="thought-monk">
+                        <div class="thought-header">
+                            <span class="thought-title">🧘 THE MONK</span>
+                            <span class="thought-status ready" id="status-monk">Ready</span>
+                        </div>
+                        <div class="thought-content" id="content-monk">
+                            <em style="color: #666;">Deep Reasoning & Loop Protection - Thinks deeply</em>
+                        </div>
+                        <div class="thought-meta" id="meta-monk">
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Tokens:</span>
+                                <span class="thought-meta-value" id="tokens-monk">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Latency:</span>
+                                <span class="thought-meta-value" id="latency-monk">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Confidence:</span>
+                                <span class="thought-meta-value" id="confidence-monk">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SHADOW Card -->
+                    <div class="thought-card" id="thought-shadow">
+                        <div class="thought-header">
+                            <span class="thought-title">🎨 THE SHADOW</span>
+                            <span class="thought-status ready" id="status-shadow">Ready</span>
+                        </div>
+                        <div class="thought-content" id="content-shadow">
+                            <em style="color: #666;">UI Styling (Chi Aesthetic) - Makes it beautiful</em>
+                        </div>
+                        <div class="thought-meta" id="meta-shadow">
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Tokens:</span>
+                                <span class="thought-meta-value" id="tokens-shadow">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Latency:</span>
+                                <span class="thought-meta-value" id="latency-shadow">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Confidence:</span>
+                                <span class="thought-meta-value" id="confidence-shadow">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OBSERVER Card -->
+                    <div class="thought-card" id="thought-observer">
+                        <div class="thought-header">
+                            <span class="thought-title">👁️ THE OBSERVER</span>
+                            <span class="thought-status ready" id="status-observer">Ready</span>
+                        </div>
+                        <div class="thought-content" id="content-observer">
+                            <em style="color: #666;">Browser Sync & Monitoring - Watches everything</em>
+                        </div>
+                        <div class="thought-meta" id="meta-observer">
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Tokens:</span>
+                                <span class="thought-meta-value" id="tokens-observer">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Latency:</span>
+                                <span class="thought-meta-value" id="latency-observer">-</span>
+                            </div>
+                            <div class="thought-meta-row">
+                                <span class="thought-meta-label">Confidence:</span>
+                                <span class="thought-meta-value" id="confidence-observer">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions for Council -->
+                <div class="council-grid" style="margin-top: 30px;">
+                    <div class="council-card">
+                        <h4>👻 GHOST</h4>
+                        <p>Predictive Engine</p>
+                        <button class="btn" onclick="activateKey('GHOST')" style="padding: 5px 10px; font-size: 0.8em;">Activate</button>
+                    </div>
+                    <div class="council-card">
+                        <h4>🏗️ ARCHITECT</h4>
+                        <p>System Design</p>
+                        <button class="btn" onclick="activateKey('ARCHITECT')" style="padding: 5px 10px; font-size: 0.8em;">Activate</button>
+                    </div>
+                    <div class="council-card">
+                        <h4>🧘 MONK</h4>
+                        <p>Deep Reasoning</p>
+                        <button class="btn" onclick="activateKey('MONK')" style="padding: 5px 10px; font-size: 0.8em;">Activate</button>
+                    </div>
+                    <div class="council-card">
+                        <h4>🎨 SHADOW</h4>
+                        <p>Chi Aesthetic</p>
+                        <button class="btn" onclick="activateKey('SHADOW')" style="padding: 5px 10px; font-size: 0.8em;">Activate</button>
+                    </div>
+                    <div class="council-card">
+                        <h4>👁️ OBSERVER</h4>
+                        <p>Browser Sync</p>
+                        <button class="btn" onclick="activateKey('OBSERVER')" style="padding: 5px 10px; font-size: 0.8em;">Activate</button>
                     </div>
                 </div>
             </div>
@@ -404,10 +759,10 @@
                 </div>
                 <div class="card" style="margin-top: 20px;">
                     <h3>Export Options</h3>
-                    <button class="btn" onclick="exportReport('json')">?? Export JSON</button>
-                    <button class="btn" onclick="exportReport('md')">?? Export Markdown</button>
-                    <button class="btn" onclick="exportReport('pdf')">?? Export PDF</button>
-                    <button class="btn" onclick="emailReport()">?? Email Report</button>
+                    <button class="btn" onclick="exportReport('json')">📄 Export JSON</button>
+                    <button class="btn" onclick="exportReport('md')">📝 Export Markdown</button>
+                    <button class="btn" onclick="exportReport('pdf')">📑 Export PDF</button>
+                    <button class="btn" onclick="emailReport()">📧 Email Report</button>
                 </div>
             </div>
 
@@ -416,9 +771,9 @@
                 <h2 class="chi-glow">System Logs</h2>
                 <div class="log-container" id="log-container"></div>
                 <div style="margin-top: 10px;">
-                    <button class="btn" onclick="clearLogs()">??? Clear</button>
-                    <button class="btn" onclick="exportLogs()">?? Export</button>
-                    <button class="btn" onclick="refreshLogs()">?? Refresh</button>
+                    <button class="btn" onclick="clearLogs()">🗑️ Clear</button>
+                    <button class="btn" onclick="exportLogs()">📥 Export</button>
+                    <button class="btn" onclick="refreshLogs()">🔄 Refresh</button>
                 </div>
             </div>
         </div>

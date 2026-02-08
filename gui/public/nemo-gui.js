@@ -1,10 +1,13 @@
 /**
  * NEMO Conductor v3.1 - Frontend GUI Controller
  * Connects dashboard to backend APIs
- * Port: 7777
+ * NOW WITH: Council Thoughts + Complexity Levels (Fender Mode)
  */
 
-const API_BASE = 'http://localhost:7777/api';
+// Auto-detect API base (localhost vs production)
+const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:7777/api'
+    : window.location.origin + '/api';
 
 // ============ STATE ============
 const appState = {
@@ -13,13 +16,24 @@ const appState = {
     spectrumInterval: null,
     councilStatus: {},
     logs: [],
-    projects: []
+    projects: [],
+    // NEW: Complexity level ("simple", "standard", "expert")
+    complexityLevel: 'simple',
+    // NEW: Track council queries
+    councilThoughts: {
+        GHOST: { status: 'ready', content: '', tokens: 0, latency: 0, confidence: 0 },
+        ARCHITECT: { status: 'ready', content: '', tokens: 0, latency: 0, confidence: 0 },
+        MONK: { status: 'ready', content: '', tokens: 0, latency: 0, confidence: 0 },
+        SHADOW: { status: 'ready', content: '', tokens: 0, latency: 0, confidence: 0 },
+        OBSERVER: { status: 'ready', content: '', tokens: 0, latency: 0, confidence: 0 }
+    }
 };
 
 // ============ INITIALIZATION ============
 
 document.addEventListener('DOMContentLoaded', async () => {
     log('info', 'NEMO Conductor v3.1 initializing...');
+    log('info', `API Base: ${API_BASE}`);
 
     // Load system info
     await loadSystemInfo();
@@ -30,8 +44,193 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize spectrum canvas
     initSpectrumCanvas();
 
+    // Apply initial complexity level
+    applyComplexityLevel();
+
     log('success', 'NEMO Conductor ready');
 });
+
+// ============ COMPLEXITY LEVEL CONTROL (THE FENDER) ============
+
+function setComplexity(level) {
+    appState.complexityLevel = level;
+
+    // Update button states
+    document.querySelectorAll('.complexity-btn').forEach(btn => btn.classList.remove('active'));
+    const btn = document.getElementById(`complexity-${level}`);
+    if (btn) btn.classList.add('active');
+
+    // Apply to UI
+    applyComplexityLevel();
+
+    log('info', `Complexity level: ${level.toUpperCase()}`);
+}
+
+function applyComplexityLevel() {
+    const level = appState.complexityLevel;
+    const members = ['ghost', 'architect', 'monk', 'shadow', 'observer'];
+
+    members.forEach(member => {
+        const contentEl = document.getElementById(`content-${member}`);
+        const metaEl = document.getElementById(`meta-${member}`);
+
+        if (contentEl && metaEl) {
+            switch(level) {
+                case 'simple':
+                    // Simple: Just show answer, hide everything else
+                    contentEl.classList.add('collapsed');
+                    metaEl.classList.remove('visible');
+                    break;
+                case 'standard':
+                    // Standard: Show full answer, hide meta
+                    contentEl.classList.remove('collapsed');
+                    metaEl.classList.remove('visible');
+                    break;
+                case 'expert':
+                    // Expert: Show everything
+                    contentEl.classList.remove('collapsed');
+                    metaEl.classList.add('visible');
+                    break;
+            }
+        }
+    });
+}
+
+// ============ COUNCIL QUERY SYSTEM ============
+
+async function queryCouncil() {
+    const input = document.getElementById('council-query');
+    const query = input.value.trim();
+
+    if (!query) {
+        log('warning', 'Please enter a question');
+        return;
+    }
+
+    log('info', `Querying all council members: "${query}"`);
+
+    // Query all 5 members in parallel
+    const members = ['GHOST', 'ARCHITECT', 'MONK', 'SHADOW', 'OBSERVER'];
+
+    // Set all to thinking
+    members.forEach(member => {
+        updateThoughtCard(member, 'thinking', 'Thinking...', {});
+    });
+
+    // Query all in parallel
+    const promises = members.map(member => queryMemberInternal(member, query));
+    await Promise.allSettled(promises);
+
+    log('success', 'Council query complete');
+}
+
+async function queryMember(member) {
+    const input = document.getElementById('council-query');
+    const query = input.value.trim();
+
+    if (!query) {
+        log('warning', 'Please enter a question');
+        return;
+    }
+
+    log('info', `Querying ${member}: "${query}"`);
+
+    updateThoughtCard(member, 'thinking', 'Thinking...', {});
+    await queryMemberInternal(member, query);
+}
+
+async function queryMemberInternal(member, query) {
+    const startTime = Date.now();
+
+    try {
+        const res = await fetch(`${API_BASE}/council/query`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                key: member,
+                query: query,
+                complexity: appState.complexityLevel
+            })
+        });
+
+        const data = await res.json();
+        const latency = Date.now() - startTime;
+
+        if (data.error) {
+            updateThoughtCard(member, 'error', `Error: ${data.error}`, { latency });
+            log('error', `${member} error: ${data.error}`);
+        } else {
+            updateThoughtCard(member, 'done', data.response || data.content, {
+                tokens: data.tokens || 0,
+                latency: latency,
+                confidence: data.confidence || 0.85
+            });
+            log('success', `${member} responded in ${latency}ms`);
+        }
+
+        // Update header status indicator
+        updateHeaderStatus(member, 'active');
+
+    } catch (err) {
+        const latency = Date.now() - startTime;
+        updateThoughtCard(member, 'error', `Connection error: ${err.message}`, { latency });
+        log('error', `${member} failed: ${err.message}`);
+    }
+}
+
+function updateThoughtCard(member, status, content, meta = {}) {
+    const memberLower = member.toLowerCase();
+
+    // Update status badge
+    const statusEl = document.getElementById(`status-${memberLower}`);
+    if (statusEl) {
+        statusEl.className = `thought-status ${status}`;
+        statusEl.textContent = status === 'thinking' ? 'Thinking...' :
+                               status === 'done' ? 'Done' :
+                               status === 'error' ? 'Error' : 'Ready';
+    }
+
+    // Update content
+    const contentEl = document.getElementById(`content-${memberLower}`);
+    if (contentEl) {
+        contentEl.innerHTML = content;
+    }
+
+    // Update meta (expert mode info)
+    if (meta.tokens !== undefined) {
+        const tokensEl = document.getElementById(`tokens-${memberLower}`);
+        if (tokensEl) tokensEl.textContent = meta.tokens;
+    }
+    if (meta.latency !== undefined) {
+        const latencyEl = document.getElementById(`latency-${memberLower}`);
+        if (latencyEl) latencyEl.textContent = `${meta.latency}ms`;
+    }
+    if (meta.confidence !== undefined) {
+        const confEl = document.getElementById(`confidence-${memberLower}`);
+        if (confEl) confEl.textContent = `${Math.round(meta.confidence * 100)}%`;
+    }
+
+    // Update card border
+    const cardEl = document.getElementById(`thought-${memberLower}`);
+    if (cardEl) {
+        cardEl.classList.remove('active', 'thinking', 'error');
+        cardEl.classList.add(status);
+    }
+
+    // Store in state
+    appState.councilThoughts[member] = { status, content, ...meta };
+
+    // Apply complexity level styling
+    applyComplexityLevel();
+}
+
+function updateHeaderStatus(member, status) {
+    const el = document.getElementById(`${member.toLowerCase()}-status`);
+    if (el) {
+        el.classList.remove('active', 'inactive', 'thinking');
+        el.classList.add(status);
+    }
+}
 
 // ============ PANEL NAVIGATION ============
 
@@ -601,4 +800,9 @@ window.clearLogs = clearLogs;
 window.exportLogs = exportLogs;
 window.refreshLogs = refreshLogs;
 
-console.log('NEMO GUI v3.1 loaded');
+// NEW: Council query functions
+window.setComplexity = setComplexity;
+window.queryCouncil = queryCouncil;
+window.queryMember = queryMember;
+
+console.log('NEMO GUI v3.1 loaded - Thought Display Ready');
