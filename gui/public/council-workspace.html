@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-Key Council Workspace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
+            padding: 15px 25px;
+            border-bottom: 2px solid #00ffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .complexity-toggle {
+            display: flex;
+            gap: 5px;
+        }
+        .complexity-btn {
+            padding: 8px 15px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .complexity-btn.active {
+            background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+            color: #0a0a0f;
+            border-color: #00ffff;
+            font-weight: bold;
+        }
+        .complexity-btn:hover { border-color: #00ffff; }
+
+        /* ===== QUERY BAR ===== */
+        .query-bar {
+            background: #1a1a2e;
+            padding: 20px 25px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .query-input {
+            flex: 1;
+            background: #0a0a0f;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px 20px;
+            color: #00ffff;
+            font-family: inherit;
+            font-size: 1.1em;
+        }
+        .query-input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        .query-input::placeholder { color: #555; }
+        .ask-btn {
+            background: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);
+            color: #0a0a0f;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .ask-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.5);
+        }
+        .ask-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== 5-PANEL WORKSPACE ===== */
+        .workspace {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            background: #333;
+            height: calc(100vh - 140px);
+        }
+
+        /* ===== AI PANEL ===== */
+        .ai-panel {
+            background: linear-gradient(180deg, #0f0f1a 0%, #0a0a0f 100%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .ai-panel.thinking {
+            animation: panelPulse 1.5s infinite;
+        }
+        @keyframes panelPulse {
+            0%, 100% { background: linear-gradient(180deg, #0f0f1a 0%, #0a0a0f 100%); }
+            50% { background: linear-gradient(180deg, #1a1a30 0%, #0f0f1a 100%); }
+        }
+        .ai-panel.done {
+            border-top: 3px solid #00ff00;
+        }
+        .ai-panel.error {
+            border-top: 3px solid #ff0000;
+        }
+
+        /* Panel Header */
+        .panel-header {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 60px;
+        }
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .panel-icon {
+            font-size: 1.5em;
+        }
+        .panel-name {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .panel-role {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 2px;
+        }
+        .panel-status {
+            font-size: 0.75em;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+        .panel-status.ready { background: #1a1a2e; color: #555; }
+        .panel-status.thinking { background: #333300; color: #ffff00; animation: blink 0.8s infinite; }
+        .panel-status.done { background: #003300; color: #00ff00; }
+        .panel-status.error { background: #330000; color: #ff0000; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Panel Content */
+        .panel-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            color: #ccc;
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+        .panel-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .panel-content::-webkit-scrollbar-track {
+            background: #0a0a0f;
+        }
+        .panel-content::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+        .panel-content::-webkit-scrollbar-thumb:hover {
+            background: #00ffff;
+        }
+        .empty-state {
+            color: #444;
+            font-style: italic;
+            text-align: center;
+            padding-top: 30px;
+        }
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffff00;
+        }
+        .thinking-dots {
+            display: flex;
+            gap: 4px;
+        }
+        .thinking-dots span {
+            width: 8px;
+            height: 8px;
+            background: #ffff00;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Panel Footer (Expert Mode) */
+        .panel-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #222;
+            font-size: 0.75em;
+            color: #555;
+            display: none;
+        }
+        .panel-footer.visible { display: block; }
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+        }
+        .meta-value { color: #00ffff; }
+
+        /* ===== RESPONSIVE: Stack on smaller screens ===== */
+        @media (max-width: 1200px) {
+            .workspace {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 800px) {
+            .workspace {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 500px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== GHOST-specific colors ===== */
+        #panel-ghost .panel-name { color: #aaaaff; }
+        #panel-ghost .panel-status.done { background: #000033; color: #aaaaff; }
+
+        /* ===== ARCHITECT-specific colors ===== */
+        #panel-architect .panel-name { color: #ffaa00; }
+        #panel-architect .panel-status.done { background: #332200; color: #ffaa00; }
+
+        /* ===== MONK-specific colors ===== */
+        #panel-monk .panel-name { color: #00ff88; }
+        #panel-monk .panel-status.done { background: #003322; color: #00ff88; }
+
+        /* ===== SHADOW-specific colors ===== */
+        #panel-shadow .panel-name { color: #ff00ff; }
+        #panel-shadow .panel-status.done { background: #330033; color: #ff00ff; }
+
+        /* ===== OBSERVER-specific colors ===== */
+        #panel-observer .panel-name { color: #00ffff; }
+        #panel-observer .panel-status.done { background: #003333; color: #00ffff; }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <h1>5-Key Council Workspace</h1>
+        <div class="header-controls">
+            <span style="color: #666; margin-right: 10px;">View:</span>
+            <div class="complexity-toggle">
+                <button class="complexity-btn active" onclick="setComplexity('simple')" id="complexity-simple">Simple</button>
+                <button class="complexity-btn" onclick="setComplexity('standard')" id="complexity-standard">Standard</button>
+                <button class="complexity-btn" onclick="setComplexity('expert')" id="complexity-expert">Expert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUERY BAR -->
+    <div class="query-bar">
+        <input type="text" class="query-input" id="query-input"
+            placeholder="Ask all 5 council members simultaneously..."
+            onkeypress="if(event.key==='Enter') askCouncil()">
+        <button class="ask-btn" id="ask-btn" onclick="askCouncil()">
+            ASK COUNCIL
+        </button>
+    </div>
+
+    <!-- 5-PANEL WORKSPACE -->
+    <div class="workspace">
+        <!-- GHOST -->
+        <div class="ai-panel" id="panel-ghost">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="panel-icon">👻</span>
+                    <div>
+                        <div class="panel-name">THE GHOST</div>
+                        <div class="panel-role">Predictive Intent</div>
+                    </div>
+                </div>
+                <span class="panel-status ready" id="status-ghost">READY</span>
+            </div>
+            <div class="panel-content" id="content-ghost">
+                <div class="empty-state">Anticipates what you need before you ask</div>
+            </div>
+            <div class="panel-footer" id="meta-ghost">
+                <div class="meta-row"><span>Tokens:</span> <span class="meta-value" id="tokens-ghost">-</span></div>
+                <div class="meta-row"><span>Latency:</span> <span class="meta-value" id="latency-ghost">-</span></div>
+                <div class="meta-row"><span>Confidence:</span> <span class="meta-value" id="confidence-ghost">-</span></div>
+            </div>
+        </div>
+
+        <!-- ARCHITECT -->
+        <div class="ai-panel" id="panel-architect">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="panel-icon">🏗️</span>
+                    <div>
+                        <div class="panel-name">THE ARCHITECT</div>
+                        <div class="panel-role">System Design</div>
+                    </div>
+                </div>
+                <span class="panel-status ready" id="status-architect">READY</span>
+            </div>
+            <div class="panel-content" id="content-architect">
+                <div class="empty-state">Builds solutions from the toolbox</div>
+            </div>
+            <div class="panel-footer" id="meta-architect">
+                <div class="meta-row"><span>Tokens:</span> <span class="meta-value" id="tokens-architect">-</span></div>
+                <div class="meta-row"><span>Latency:</span> <span class="meta-value" id="latency-architect">-</span></div>
+                <div class="meta-row"><span>Confidence:</span> <span class="meta-value" id="confidence-architect">-</span></div>
+            </div>
+        </div>
+
+        <!-- MONK -->
+        <div class="ai-panel" id="panel-monk">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="panel-icon">🧘</span>
+                    <div>
+                        <div class="panel-name">THE MONK</div>
+                        <div class="panel-role">Deep Reasoning</div>
+                    </div>
+                </div>
+                <span class="panel-status ready" id="status-monk">READY</span>
+            </div>
+            <div class="panel-content" id="content-monk">
+                <div class="empty-state">Thinks deeply, prevents loops</div>
+            </div>
+            <div class="panel-footer" id="meta-monk">
+                <div class="meta-row"><span>Tokens:</span> <span class="meta-value" id="tokens-monk">-</span></div>
+                <div class="meta-row"><span>Latency:</span> <span class="meta-value" id="latency-monk">-</span></div>
+                <div class="meta-row"><span>Confidence:</span> <span class="meta-value" id="confidence-monk">-</span></div>
+            </div>
+        </div>
+
+        <!-- SHADOW -->
+        <div class="ai-panel" id="panel-shadow">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="panel-icon">🎨</span>
+                    <div>
+                        <div class="panel-name">THE SHADOW</div>
+                        <div class="panel-role">Chi Aesthetic</div>
+                    </div>
+                </div>
+                <span class="panel-status ready" id="status-shadow">READY</span>
+            </div>
+            <div class="panel-content" id="content-shadow">
+                <div class="empty-state">Makes everything beautiful</div>
+            </div>
+            <div class="panel-footer" id="meta-shadow">
+                <div class="meta-row"><span>Tokens:</span> <span class="meta-value" id="tokens-shadow">-</span></div>
+                <div class="meta-row"><span>Latency:</span> <span class="meta-value" id="latency-shadow">-</span></div>
+                <div class="meta-row"><span>Confidence:</span> <span class="meta-value" id="confidence-shadow">-</span></div>
+            </div>
+        </div>
+
+        <!-- OBSERVER -->
+        <div class="ai-panel" id="panel-observer">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="panel-icon">👁️</span>
+                    <div>
+                        <div class="panel-name">THE OBSERVER</div>
+                        <div class="panel-role">Monitoring</div>
+                    </div>
+                </div>
+                <span class="panel-status ready" id="status-observer">READY</span>
+            </div>
+            <div class="panel-content" id="content-observer">
+                <div class="empty-state">Watches everything, misses nothing</div>
+            </div>
+            <div class="panel-footer" id="meta-observer">
+                <div class="meta-row"><span>Tokens:</span> <span class="meta-value" id="tokens-observer">-</span></div>
+                <div class="meta-row"><span>Latency:</span> <span class="meta-value" id="latency-observer">-</span></div>
+                <div class="meta-row"><span>Confidence:</span> <span class="meta-value" id="confidence-observer">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIG =====
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:7777/api'
+            : window.location.origin + '/api';
+
+        const MEMBERS = ['ghost', 'architect', 'monk', 'shadow', 'observer'];
+        let complexityLevel = 'simple';
+        let isQuerying = false;
+
+        // ===== COMPLEXITY TOGGLE =====
+        function setComplexity(level) {
+            complexityLevel = level;
+            document.querySelectorAll('.complexity-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`complexity-${level}`).classList.add('active');
+
+            // Show/hide meta footers based on complexity
+            MEMBERS.forEach(member => {
+                const footer = document.getElementById(`meta-${member}`);
+                if (level === 'expert') {
+                    footer.classList.add('visible');
+                } else {
+                    footer.classList.remove('visible');
+                }
+            });
+        }
+
+        // ===== ASK COUNCIL =====
+        async function askCouncil() {
+            const input = document.getElementById('query-input');
+            const query = input.value.trim();
+            if (!query || isQuerying) return;
+
+            isQuerying = true;
+            document.getElementById('ask-btn').disabled = true;
+
+            // Set all panels to thinking
+            MEMBERS.forEach(member => {
+                setPanel(member, 'thinking', '<div class="thinking-indicator"><div class="thinking-dots"><span></span><span></span><span></span></div> Thinking...</div>');
+            });
+
+            // Query all members in parallel
+            const promises = MEMBERS.map(member => queryMember(member, query));
+            await Promise.allSettled(promises);
+
+            isQuerying = false;
+            document.getElementById('ask-btn').disabled = false;
+        }
+
+        // ===== QUERY SINGLE MEMBER =====
+        async function queryMember(member, query) {
+            const startTime = Date.now();
+            try {
+                const res = await fetch(`${API_BASE}/council/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: member.toUpperCase(),
+                        query: query,
+                        complexity: complexityLevel
+                    })
+                });
+
+                const data = await res.json();
+                const latency = Date.now() - startTime;
+
+                if (data.error) {
+                    setPanel(member, 'error', `Error: ${data.error}`);
+                } else {
+                    setPanel(member, 'done', data.response || data.message || 'No response');
+                    setMeta(member, data.tokens || 0, latency, data.confidence || 0);
+                }
+            } catch (err) {
+                setPanel(member, 'error', `Failed: ${err.message}`);
+            }
+        }
+
+        // ===== SET PANEL STATE =====
+        function setPanel(member, status, content) {
+            const panel = document.getElementById(`panel-${member}`);
+            const statusEl = document.getElementById(`status-${member}`);
+            const contentEl = document.getElementById(`content-${member}`);
+
+            // Reset classes
+            panel.classList.remove('thinking', 'done', 'error');
+            statusEl.classList.remove('ready', 'thinking', 'done', 'error');
+
+            // Set new state
+            panel.classList.add(status);
+            statusEl.classList.add(status);
+            statusEl.textContent = status.toUpperCase();
+            contentEl.innerHTML = content;
+        }
+
+        // ===== SET META (Expert Mode) =====
+        function setMeta(member, tokens, latency, confidence) {
+            document.getElementById(`tokens-${member}`).textContent = tokens;
+            document.getElementById(`latency-${member}`).textContent = `${latency}ms`;
+            document.getElementById(`confidence-${member}`).textContent =
+                confidence ? `${(confidence * 100).toFixed(1)}%` : '-';
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            setComplexity('simple');
+            console.log('5-Key Council Workspace loaded');
+            console.log('API Base:', API_BASE);
+        });
+    </script>
+</body>
+</html>
